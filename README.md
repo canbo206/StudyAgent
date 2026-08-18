@@ -64,41 +64,23 @@ cd src
 python orchestrator.py "Create a study guide on the causes of WWI"
 ```
 
-Watch the terminal — it prints each reasoning step and tool call live. When
-it finishes, the full trace is saved to `runs/run_<timestamp>.json`. Open
-`trace_viewer.html` in a browser and load that file to step through the
+Watch the terminal as it prints each reasoning step and tool call live. When
+it finishes, the full trace is saved to `runs/run_<timestamp>.json`. Find in files and open `trace_viewer.html` in a browser, load that file to step through the
 agent's reasoning visually.
 
-### Keeping costs near zero while developing
+### Keeping costs low while developing
 
-The default model in `.env.example` is `claude-haiku-4-5-20251001` — cheap
+The default model in `.env.example` is `claude-haiku-4-5-20251001` cheap
 enough that a full test run costs a fraction of a cent. Switch
 `AUTOAGENT_MODEL` to `claude-sonnet-5` only when you want higher-quality
 output (e.g. recording a demo). `AUTOAGENT_MAX_STEPS` hard-caps how many
 reasoning/tool-call iterations a single run can take, so a bug can't run up
 an unexpected bill.
 
-There is no ongoing charge for this project existing — you're billed only
+There is no ongoing charge for this project existing you're billed only
 for the tokens used during an actual run. See `console.anthropic.com` to set
 a spend limit.
 
-## Design decisions worth knowing (for interviews)
-
-- **Native tool-use loop, not a text-parsing hack.** Claude decides to stop
-  by simply not calling `web_search` and returning plain text instead of a
-  brittle "reply with FINAL: ..." convention.
-- **Real MCP server, not a hardcoded function call.** `search_server.py`
-  speaks the actual Model Context Protocol over stdio — the orchestrator
-  discovers its tools at runtime via `list_tools()`, the same way it would
-  discover any other MCP server (GitHub, filesystem, Slack, etc). Swapping
-  or adding tools doesn't require touching the orchestrator's core loop.
-- **Hard step cap with a forced-finish turn**, not an unbounded loop. On the
-  last allowed step, the tool is removed from the API call entirely (rather
-  than just asked nicely not to be used) so the model is structurally unable
-  to keep stalling.
-- **Full JSON trace log per run.** Every reasoning turn, tool call, and tool
-  result is recorded with a timestamp, so the agent's behavior is auditable
-  after the fact — not just a black box that spits out a final answer.
 
 ## Project structure
 
