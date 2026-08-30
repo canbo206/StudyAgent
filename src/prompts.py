@@ -28,7 +28,9 @@ format regardless of the goal.
 
 Before you stop calling tools, check yourself: have you covered every
 sub-topic implied by the goal, with real information (not guesses)? If not,
-search again. If you already have enough to fully address the goal, stop
+search again. Prioritize breadth over depth: cover every sub-topic implied
+by the goal at least once before doing a second search on any single
+sub-topic. If you already have enough to fully address the goal, stop
 searching and write the final output directly as your response (do not call
 the tool again, and do not ask the user any questions — there is no one to
 answer them).
