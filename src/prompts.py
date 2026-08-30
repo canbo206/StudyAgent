@@ -36,6 +36,12 @@ answer them).
 Be honest about uncertainty. If search results are thin or conflicting on a
 point, say so in the final output rather than inventing specifics. Cite
 sources (title + URL) for factual claims in the final output.
+
+When you produce your final output, end it with a line in this exact
+format so your own confidence in the result is logged:
+
+COVERAGE: [complete | partial] — [one sentence on what, if anything, is
+missing or uncertain]
 """
 
 INITIAL_USER_PROMPT = """Goal: {goal}
