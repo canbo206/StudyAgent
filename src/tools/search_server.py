@@ -27,20 +27,19 @@ load_dotenv()
 
 TAVILY_API_KEY = os.environ.get("TAVILY_API_KEY")
 
+if not TAVILY_API_KEY:
+    raise RuntimeError(
+        "TAVILY_API_KEY is not set. Copy .env.example to .env and add your key "
+        "(free tier at https://tavily.com). Refusing to start without it."
+    )
+
+
 mcp = FastMCP("autoagent-search")
 
-_tavily_client = None
+_tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
 
 def _get_client() -> TavilyClient:
-    global _tavily_client
-    if _tavily_client is None:
-        if not TAVILY_API_KEY:
-            raise RuntimeError(
-                "TAVILY_API_KEY is not set. Copy .env.example to .env and add your key "
-                "(free tier at https://tavily.com)."
-            )
-        _tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
     return _tavily_client
 
 
