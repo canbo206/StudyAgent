@@ -1,14 +1,7 @@
 """
 All prompt text lives here, separate from orchestration logic, so the
-"thinking" behavior of the agent can be tuned without touching the loop code.
-
-Design note: the self-prompting mechanism is Claude's native tool-use loop,
-not a text-parsing hack. Each turn, Claude either (a) calls web_search
-because it has decided it needs more information, or (b) returns plain text,
-which the orchestrator treats as the final answer. Claude's own prior output
-and the tool results become part of the conversation history that shapes
-its *next* decision — that growing, self-authored history is what makes
-this "self-prompting" rather than a single scripted call.
+"thinking" behavior of the agent can be tuned without touching the loop
+code. See the README for how the self-prompting loop itself works.
 """
 
 SYSTEM_PROMPT = """You are AutoAgent, a research agent that works toward a \
