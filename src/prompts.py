@@ -61,4 +61,6 @@ FORCE_FINISH_PROMPT = """You have reached the maximum number of research \
 steps allowed for this session. The web_search tool is no longer available. \
 Based on everything you've found so far, write the best possible final \
 answer to the original goal now. Be explicit about any sub-questions you \
-were not able to fully resolve given the step limit."""
+were not able to fully resolve given the step limit, and include the \
+COVERAGE line as instructed — it should honestly reflect that coverage is \
+likely partial given the step limit."""
