@@ -49,10 +49,11 @@ missing or uncertain]
 INITIAL_USER_PROMPT = """Goal: {goal}
 
 This is the only instruction you will receive directly from a human. \
-Everything after this is your own research process. Start by identifying \
-the sub-questions this goal requires answering, then take your first \
-action — a search, or, if the goal genuinely needs no external \
-information, go straight to a final written answer."""
+Everything after this is your own research process. Before taking any action, 
+list the specific sub-questions this goal \
+requires answering, numbered. Then take your first action — a search \
+targeting one of those sub-questions, or, if the goal genuinely needs no \
+external information, go straight to a final written answer."""
 
 # Sent as a plain user turn (with tools removed from the API call) once the
 # step cap is hit, so Claude is forced to synthesize rather than search again.
