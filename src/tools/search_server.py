@@ -65,12 +65,22 @@ def web_search(query: str, max_results: int = 5) -> str:
     max_results = max(1, min(max_results, 10))
     client = _get_client()
 
-    response = client.search(
-        query=query,
-        max_results=max_results,
-        search_depth="advanced",
-    )
-
+    try:
+        response = client.search(
+            query=query,
+            max_results=max_results,
+            search_depth="advanced",
+        )
+    except Exception as e:
+        # Report the failure back to Claude as a normal tool result rather
+        # than letting the exception kill the whole MCP server process.
+        # This lets the agent react (retry, rephrase, or note the gap)
+        # instead of the entire session crashing on one bad API call.
+        return (
+            f"Search failed for query: {query!r}. Error: {type(e).__name__}: {e}. "
+            f"You may try a different query, or note this gap in your final output."
+        )
+    
     results = response.get("results", [])
     if not results:
         return f"No results found for query: {query!r}"
