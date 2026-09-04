@@ -29,6 +29,12 @@ from prompts import FORCE_FINISH_PROMPT, INITIAL_USER_PROMPT, SYSTEM_PROMPT
 
 load_dotenv()
 
+if not os.environ.get("ANTHROPIC_API_KEY"):
+    raise RuntimeError(
+        "ANTHROPIC_API_KEY is not set. Copy .env.example to .env and add "
+        "your key from console.anthropic.com. WILL NOT start without it."
+    )
+
 MODEL = os.environ.get("AUTOAGENT_MODEL", "claude-haiku-4-5-20251001")
 MAX_STEPS = int(os.environ.get("AUTOAGENT_MAX_STEPS", "8"))
 MAX_TOKENS = 5000
