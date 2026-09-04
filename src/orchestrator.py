@@ -20,7 +20,7 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from anthropic import Anthropic
+from anthropic import Anthropic, APIError
 from dotenv import load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
@@ -122,14 +122,26 @@ async def run_agent(goal: str) -> str:
 
                 print(f"\n[step {step}/{MAX_STEPS}] calling Claude "
                       f"({'forced finish' if forced_finish else 'reasoning'})...")
-
-                response = client.messages.create(
-                    model=MODEL,
-                    max_tokens=MAX_TOKENS,
-                    system=SYSTEM_PROMPT,
-                    tools=active_tools if active_tools else None,
-                    messages=messages,
-                )
+                try:
+                    response = client.messages.create(
+                        model=MODEL,
+                        max_tokens=MAX_TOKENS,
+                        system=SYSTEM_PROMPT,
+                        tools=active_tools if active_tools else None,
+                        messages=messages,
+                    )
+                except APIError as e:
+                    # Don't lose everything found and record what you
+                    # have and stop cleanly instead of crashing mid run.
+                    print(f"\n[error] Anthropic API call failed on step "
+                          f"{step}: {e}")
+                    partial_output = (
+                        f"[Run stopped early due to an API error: {e}]\n"
+                        f"Partial progress was made before this point:"
+                        f"see the trace log for what was found."
+                    )
+                    tracer.finish(partial_output, "api_error")
+                    return partial_output
 
                 # Log whatever text reasoning Claude produced this turn
                 text_parts = [b.text for b in response.content if b.type == "text"]
