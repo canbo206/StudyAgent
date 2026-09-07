@@ -142,6 +142,12 @@ async def run_agent(goal: str) -> str:
                     )
                     tracer.finish(partial_output, "api_error")
                     return partial_output
+                
+                if response.stop_reason == "max_tokens":
+                    print(f"[warning] step {step} response was truncated"
+                          f"by MAX_TOKENS - consider raising it in"
+                          f"orchestrator.py if this happens often.")
+                    tracer.log_step(step, "warning", "response truncated: hit MAX_TOKENS")
 
                 # Log whatever text reasoning Claude produced this turn
                 text_parts = [b.text for b in response.content if b.type == "text"]
