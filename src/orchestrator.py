@@ -220,7 +220,13 @@ def main():
     print(f"[config] model={MODEL} max_steps={MAX_STEPS}\n")
 
     start = time.time()
-    final_output = asyncio.run(run_agent(goal))
+    try:
+        final_output = asyncio.run(run_agent(goal))
+    except KeyboardInterrupt:
+        print("\n\n[interrupted] Run cancelled by user (Ctrl+C).")
+        print("[interrupted] Partial trace saved in runs/ — stopped_reason "
+              "will show 'user_interrupted' if a trace was already started.")
+        sys.exit(1)
     elapsed = time.time() - start
 
     print("\n" + "=" * 70)
