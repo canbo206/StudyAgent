@@ -11,7 +11,8 @@ Usage:
     python src/orchestrator.py "Create a study guide on the causes of WWI"
 """
 
-"""REMEMBER TO cd StudyAgent && source venv/bin/activate before do orchestrator.py"""
+# Reminder: activate the venv first —
+#   cd StudyAgent && source venv/bin/activate
 import asyncio
 import json
 import os
