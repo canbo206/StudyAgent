@@ -42,31 +42,61 @@ is Claude's, every turn.
    runs/run_<timestamp>.json   →  open in trace_viewer.html
 ```
 
-## Setup
+## Setup (One time)
 
 1. **Get an Anthropic API key** — console.anthropic.com. This is pay-per-use,
    not a subscription; see cost notes below.
 2. **Get a free Tavily API key** — tavily.com (free tier: 1,000 searches/month).
-3. Install dependencies:
+3. **Create a virtual environment** (isolates this project's packages from
+   the rest of your system — do this once, from the project root):
    ```bash
-   pip install -r requirements.txt
+      python3 -m venv venv
    ```
-4. Copy the env template and fill in your keys:
+4. **Activate it:**
    ```bash
-   cp .env.example .env
+      source venv/bin/activate
+   ```
+
+5. Install dependencies (with venv active):
+   ```bash
+      pip install -r requirements.txt
+   ```
+6. Copy the env template and fill in your keys:
+   ```bash
+      cp .env.example .env
    # edit .env with your real ANTHROPIC_API_KEY and TAVILY_API_KEY
    ```
 
 ## Run it
 
+**Every time you open a new terminal to work on this project**, you need to
+re-activate the virtual environment first — it doesn't stay active across
+terminal sessions:
+ 
 ```bash
-cd src
-python orchestrator.py "Create a study guide on the causes of WWI"
+   cd path/to/autoagent      # the project root
+   source venv/bin/activate  # look for (venv) to appear in your prompt
+```
+
+Then move into `src/` and run it, passing your goal as a quoted argument:
+ 
+```bash
+   cd src
+   python3 orchestrator.py "Create a study guide on the causes of WWI"
 ```
 
 Watch the terminal as it prints each reasoning step and tool call live. When
-it finishes, the full trace is saved to `runs/run_<timestamp>.json`. Find in files and open `trace_viewer.html` in a browser, load that file to step through the
-agent's reasoning visually.
+it finishes, the full trace is saved to `runs/run_<timestamp>.json`. Open
+`trace_viewer.html` in a browser (just double-click it in Finder/Explorer)
+and use the file picker to load that JSON file to step through the agent's
+reasoning visually, with headers, bold text, and lists rendered properly
+rather than as raw markdown symbols.
+ 
+**When you're done working on the project**, you can deactivate the venv
+(optional, just for cleanliness):
+```bash
+   deactivate
+```
 
 ### Keeping costs low while developing
 
