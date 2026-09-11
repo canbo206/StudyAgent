@@ -32,6 +32,7 @@ if not TAVILY_API_KEY:
         "TAVILY_API_KEY is not set. Copy .env.example to .env and add your key "
         "(free tier at https://tavily.com). Refusing to start without it."
     )
+SEARCH_DEPTH = os.environ.get("TAVILY_SEARCH_DEPTH", "advanced")
 
 
 mcp = FastMCP("autoagent-search")
@@ -72,7 +73,7 @@ def web_search(query: str, max_results: int = 5) -> str:
         response = client.search(
             query=query,
             max_results=max_results,
-            search_depth="advanced",
+            search_depth= SEARCH_DEPTH,
         )
     except Exception as e:
         # Report the failure back to Claude as a normal tool result rather
