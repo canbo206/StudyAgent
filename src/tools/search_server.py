@@ -62,6 +62,9 @@ def web_search(query: str, max_results: int = 5) -> str:
         A formatted string of search results: title, URL, and a short
         content snippet for each result.
     """
+    query = query.strip()
+    if not query:
+        return "Search failed: query was empty. Provide a specific, non empty search term."
     max_results = max(1, min(max_results, 10))
     client = _get_client()
 
