@@ -14,6 +14,8 @@ Run standalone for a quick sanity check:
 
 import os
 import warnings
+import sys
+import time
 
 warnings.filterwarnings(
     "ignore",
@@ -69,6 +71,10 @@ def web_search(query: str, max_results: int = 5) -> str:
     max_results = max(1, min(max_results, 10))
     client = _get_client()
 
+    print(f"[search_server] searching: {query!r} (max_results={max_results})",
+          file=sys.stderr)
+    start = time.time()
+
     try:
         response = client.search(
             query=query,
@@ -84,6 +90,11 @@ def web_search(query: str, max_results: int = 5) -> str:
             f"Search failed for query: {query!r}. Error: {type(e).__name__}: {e}. "
             f"You may try a different query, or note this gap in your final output."
         )
+    
+    elapsed = time.time() - start
+    results = response.get("results", [])
+    print(f"[search_server] got {len(results)} results in {elapsed:.2f}s",
+          file=sys.stderr)
     
     results = response.get("results", [])
     if not results:
