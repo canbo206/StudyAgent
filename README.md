@@ -74,7 +74,7 @@ re-activate the virtual environment first — it doesn't stay active across
 terminal sessions:
  
 ```bash
-   cd path/to/autoagent      # the project root
+   cd path/to/Studyagent      # the project root
    source venv/bin/activate  # look for (venv) to appear in your prompt
 ```
 
