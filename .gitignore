@@ -4,4 +4,8 @@ __pycache__/
 *.pyc
 .venv/
 venv/
-.DS_Store 
+.DS_Store
+.env.*
+!.env.example
+# Keep cloud credentials outside the project
+*-service-account.json

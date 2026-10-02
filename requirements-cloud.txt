@@ -1,0 +1,4 @@
+boto3>=1.35,<2
+azure-storage-blob>=12.23,<13
+azure-identity>=1.19,<2
+firebase-admin>=6.6,<8
