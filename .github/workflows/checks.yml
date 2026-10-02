@@ -1,0 +1,26 @@
+name: Project checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Bash setup and tests
+        if: runner.os == 'Linux'
+        run: |
+          bash scripts/dev.sh setup
+          bash scripts/dev.sh test
+      - name: PowerShell setup and tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          ./scripts/dev.ps1 -Action setup
+          ./scripts/dev.ps1 -Action test
