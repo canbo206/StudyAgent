@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="h2">Research runs</h1>
+<p class="text-secondary">Browse saved goals, step counts, and final answers.</p>
+{% if unreadable %}<p class="alert alert-warning" role="status">{{ unreadable }} unreadable trace file(s) skipped. A run may still be writing.</p>{% endif %}
+{% if traces %}
+<div class="table-responsive"><table class="table table-striped align-middle">
+  <thead><tr><th scope="col">Goal</th><th scope="col">Started (UTC)</th><th scope="col">Log entries</th><th scope="col">Status</th></tr></thead>
+  <tbody>{% for trace in traces %}<tr>
+    <td class="goal"><a href="{{ url_for('detail', filename=trace.filename) }}">{{ trace.goal }}</a></td>
+    <td>{{ trace.started_at or 'Unknown' }}</td><td>{{ trace.step_count }}</td>
+    <td><span class="badge text-bg-secondary">{{ trace.stopped_reason }}</span></td>
+  </tr>{% endfor %}</tbody>
+</table></div>
+{% else %}<p class="alert alert-info">No saved runs yet. Run the agent with a research goal, then refresh this page.</p>{% endif %}
+{% endblock %}

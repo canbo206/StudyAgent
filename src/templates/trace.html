@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}StudyAgent · Research trace{% endblock %}
+{% block content %}
+<a href="{{ url_for('index') }}">Back to runs</a>
+<h1 class="h3 mt-3 goal">{{ trace.goal }}</h1>
+<p class="text-secondary">{{ trace.model or 'Unknown model' }} · {{ trace.stopped_reason or 'in_progress' }}</p>
+<a class="btn btn-outline-primary mb-4" href="{{ url_for('download', filename=filename) }}">Download JSON</a>
+<h2 class="h4">Final output</h2>
+<pre class="bg-white border rounded p-3">{{ trace.final_output or 'No final output saved yet.' }}</pre>
+<h2 class="h4 mt-4">Trace entries</h2>
+{% for step in trace.steps %}
+<details class="border rounded bg-white p-3 mb-2">
+  <summary>Entry {{ loop.index }}{% if step is mapping %} · {{ step.kind }}{% endif %}</summary>
+  <pre class="mt-3 mb-0">{{ step | tojson(indent=2) }}</pre>
+</details>
+{% endfor %}
+{% endblock %}
