@@ -9,3 +9,6 @@ venv/
 !.env.example
 # Keep cloud credentials outside the project
 *-service-account.json
+
+# Local interview preparation
+/INTERVIEW_GUIDE.md
