@@ -4,12 +4,13 @@ StudyAgent is a Python research agent that turns a plain-English goal into a stu
 
 ## How it works
 
-1. You supply a goal. The prompt asks Claude to identify sub-questions and choose its next action.
-2. The orchestrator sends requested searches to the MCP server, then adds the results to the conversation for the next model call.
-3. A response without a tool call becomes the final answer. On the last allowed iteration, the orchestrator removes tools and asks Claude to finish with the available information.
-4. Model text, tool calls, results, and the final output are saved in `runs/run_<UTC timestamp>.json`.
+1. You supply a goal. The prompt tells Claude today's date and its step budget, and asks it to list sub-questions and run its first searches.
+2. The orchestrator sends requested searches to the MCP server, then adds the results, plus a note on how many steps remain, to the conversation for the next model call. Several searches in one response cost one step.
+3. A response without a tool call becomes the final document. After the last research step, the orchestrator disables tool use and asks Claude to write with what it has.
+4. If the document is cut off by the output-token cap, the orchestrator asks Claude to continue from where it stopped (up to two times) and joins the pieces.
+5. Model text, tool calls, results, token usage, and the final output are saved in `runs/run_<UTC timestamp>.json`. The finished document is also saved next to it as `run_<UTC timestamp>.md`.
 
-The prompts request citations and a `COVERAGE` assessment; these are model-generated, not independently verified. Trace entries labeled `reasoning` contain visible response text, not private model reasoning.
+The prompts request citations and a closing `COVERAGE: complete|partial` line, which is parsed into the trace's `coverage` field; these are model-generated, not independently verified. Trace entries labeled `reasoning` contain visible response text, not private model reasoning.
 
 ## Setup and run
 
@@ -28,17 +29,21 @@ Add your `ANTHROPIC_API_KEY` and `TAVILY_API_KEY` to `.env`, then run:
 python src/orchestrator.py "Create a study guide on the causes of WWI"
 ```
 
+For a long goal (a pasted assignment, job description, or interview invite), save it to a text file and pass `--goal-file goal.txt` instead of quoting it on the command line.
+
 On Windows PowerShell, create the environment with `python -m venv venv`, activate it with `./venv/Scripts/Activate.ps1`, and copy the template with `Copy-Item .env.example .env`. The install and run commands are the same.
 
 Reactivate the environment in each new terminal. Use `deactivate` when finished.
 
-Configuration retains the original `AUTOAGENT_` names:
+Optional settings in `.env` (the original `AUTOAGENT_MODEL` and `AUTOAGENT_MAX_STEPS` names are still read as fallbacks):
 
-- `AUTOAGENT_MODEL`: defaults to `claude-haiku-4-5-20251001`.
-- `AUTOAGENT_MAX_STEPS`: defaults to `8`; use a positive integer. Includes the final synthesis iteration.
+- `STUDYAGENT_MODEL`: defaults to `claude-haiku-4-5-20251001`.
+- `STUDYAGENT_MAX_STEPS`: defaults to `8`; 1 to 50. Includes the final writing step.
+- `STUDYAGENT_MAX_TOKENS`: output cap per model response; defaults to `16000`, 1000 to 20000.
+- `STUDYAGENT_SNIPPET_CHARS`: characters of page content kept per search result; defaults to `1000`.
 - `TAVILY_SEARCH_DEPTH`: defaults to `advanced`; can be set to `basic`.
 
-Each model response is capped at 5,000 tokens in the code. The iteration cap bounds the loop, but is not a dollar budget or a limit on individual searches: one response can request multiple tools. API usage may incur charges.
+Invalid values stop the run with a one-line message before any API call. The step cap bounds the loop, but is not a dollar budget or a limit on individual searches: one response can request multiple searches. Each run prints its total input and output tokens and records them in the trace. API usage may incur charges.
 
 ## View saved runs
 
@@ -56,16 +61,16 @@ Open `http://127.0.0.1:5000`. The dashboard reads saved files without calling th
 ## Tests and developer scripts
 
 ```bash
-bash scripts/dev.sh setup   # installs dashboard + cloud dependencies
+bash scripts/dev.sh setup   # installs agent + dashboard + cloud dependencies
 bash scripts/dev.sh test
 bash scripts/dev.sh serve
 # In a second terminal while the server is running:
 bash scripts/dev.sh health
 ```
 
-PowerShell equivalents use `./scripts/dev.ps1 -Action setup` (or `test`, `serve`, `health`). These scripts do not install the research agent's `requirements.txt`.
+PowerShell equivalents use `./scripts/dev.ps1 -Action setup` (or `test`, `serve`, `health`).
 
-The unittest suite covers the dashboard, trace validation, and mocked cloud exports. GitHub Actions is configured to run it on Linux and Windows with Python 3.12. It does not test live Claude/Tavily calls or real cloud uploads.
+The unittest suite covers the agent loop (with a scripted fake model and search tool), the dashboard, trace validation, and mocked cloud exports. GitHub Actions is configured to run it on Linux and Windows with Python 3.12. It does not test live Claude/Tavily calls or real cloud uploads.
 
 ## Optional cloud export
 
@@ -89,8 +94,6 @@ python src/archive_run.py runs/run_YOUR_TIMESTAMP.json --provider firebase --des
 - `src/archive_run.py` — optional cloud export CLI.
 - `trace_viewer.html` — standalone browser viewer.
 - `tests/`, `scripts/`, `.github/workflows/checks.yml` — tests, development commands, and CI.
-- `runs/` — generated traces, excluded from Git.
-
-Some internal prompts and UI labels still use the earlier name **AutoAgent**.
+- `runs/` — generated traces and documents, excluded from Git.
 
 Licensed under the [MIT License](LICENSE).
