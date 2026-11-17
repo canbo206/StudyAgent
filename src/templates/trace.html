@@ -4,6 +4,8 @@
 <a href="{{ url_for('index') }}">Back to runs</a>
 <h1 class="h3 mt-3 goal">{{ trace.goal }}</h1>
 <p class="text-secondary">{{ trace.model or 'Unknown model' }} · {{ trace.stopped_reason or 'in_progress' }}</p>
+{% if trace.coverage is mapping %}<p>Self-reported coverage: <span class="badge text-bg-{{ 'success' if trace.coverage.level == 'complete' else 'warning' }}">{{ trace.coverage.level }}</span> {{ trace.coverage.note }}</p>{% endif %}
+{% if trace.usage is mapping %}<p class="text-secondary small">{{ trace.usage.input_tokens }} input / {{ trace.usage.output_tokens }} output tokens</p>{% endif %}
 <a class="btn btn-outline-primary mb-4" href="{{ url_for('download', filename=filename) }}">Download JSON</a>
 <h2 class="h4">Final output</h2>
 <pre class="bg-white border rounded p-3">{{ trace.final_output or 'No final output saved yet.' }}</pre>

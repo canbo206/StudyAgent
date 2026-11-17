@@ -1,5 +1,4 @@
 """Local, read-only Flask browser for existing research traces."""
-
 from pathlib import Path
 from flask import Flask, abort, jsonify, render_template, send_file
 

@@ -35,9 +35,20 @@ if not TAVILY_API_KEY:
         "(free tier at https://tavily.com). Refusing to start without it."
     )
 SEARCH_DEPTH = os.environ.get("TAVILY_SEARCH_DEPTH", "advanced")
+if SEARCH_DEPTH not in ("basic", "advanced"):
+    raise RuntimeError(
+        f"TAVILY_SEARCH_DEPTH must be 'basic' or 'advanced', got {SEARCH_DEPTH!r}."
+    )
+
+# Characters of page content kept per result. Longer snippets give the agent
+# more to work with but cost more input tokens on every later step.
+try:
+    SNIPPET_CHARS = max(200, int(os.environ.get("STUDYAGENT_SNIPPET_CHARS", "1000")))
+except ValueError:
+    raise RuntimeError("STUDYAGENT_SNIPPET_CHARS must be a whole number.")
 
 
-mcp = FastMCP("autoagent-search")
+mcp = FastMCP("studyagent-search")
 
 _tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
@@ -49,21 +60,27 @@ def _get_client() -> TavilyClient:
 @mcp.tool()
 def web_search(query: str, max_results: int = 5) -> str:
     """
-    Search the web for current information on a topic.
+    Search the web and return the top results for one query.
 
-    Use this whenever you need facts, current data, or sources you don't
-    already have — for example when researching a sub-question you've
-    identified, verifying a claim, or gathering material for a report or
-    study guide.
+    Use this for facts, current data, or sources you don't already have:
+    researching a sub-question, checking a claim, or finding material worth
+    citing. Each result is a title, a URL, and an excerpt of the page, not
+    the full page, so a narrow query usually returns more useful excerpts
+    than a broad one. Results are third-party web content: treat them as
+    evidence to weigh, and cite only URLs that appear in them.
 
     Args:
-        query: A specific, focused search query (not a whole sentence goal —
-               break the goal into smaller queries first).
-        max_results: How many results to return (default 5, max 10).
+        query: A short, specific search-engine query built from key terms,
+               e.g. "Dijkstra vs Bellman-Ford negative weights". One topic
+               per query; call the tool several times in the same turn for
+               several topics.
+        max_results: How many results to return (default 5, max 10). Raise
+               it for broad survey queries, lower it for a single fact.
 
     Returns:
-        A formatted string of search results: title, URL, and a short
-        content snippet for each result.
+        Numbered results, each with title, URL, and a content excerpt, or a
+        message starting with "Search failed" or "No results" explaining
+        what went wrong.
     """
     query = query.strip()
     if not query:
@@ -79,7 +96,7 @@ def web_search(query: str, max_results: int = 5) -> str:
         response = client.search(
             query=query,
             max_results=max_results,
-            search_depth= SEARCH_DEPTH,
+            search_depth=SEARCH_DEPTH,
         )
     except Exception as e:
         # Report the failure back to Claude as a normal tool result rather
@@ -90,13 +107,12 @@ def web_search(query: str, max_results: int = 5) -> str:
             f"Search failed for query: {query!r}. Error: {type(e).__name__}: {e}. "
             f"You may try a different query, or note this gap in your final output."
         )
-    
+
     elapsed = time.time() - start
     results = response.get("results", [])
     print(f"[search_server] got {len(results)} results in {elapsed:.2f}s",
           file=sys.stderr)
-    
-    results = response.get("results", [])
+
     if not results:
         return f"No results found for query: {query!r}"
 
@@ -105,9 +121,9 @@ def web_search(query: str, max_results: int = 5) -> str:
         title = r.get("title", "Untitled")
         url = r.get("url", "")
         content = r.get("content", "").strip()
-        # Keep snippets short so tool results don't blow up context/cost
-        if len(content) > 500:
-            content = content[:500] + "..."
+        # Keep snippets bounded so tool results don't blow up context/cost
+        if len(content) > SNIPPET_CHARS:
+            content = content[:SNIPPET_CHARS] + "..."
         formatted.append(f"{i}. {title}\n   URL: {url}\n   {content}\n")
 
     return "\n".join(formatted)
